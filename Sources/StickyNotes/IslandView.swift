@@ -9,8 +9,9 @@ import SwiftUI
 struct EdgeBlobShape: Shape {
   /// Convex rounding on the trailing (right) corners.
   var trailingRadius: CGFloat = 26
-  /// How far the flat top edge sits below the raised wall top.
-  var topRaise: CGFloat = 14
+  /// How far the flat top/bottom edges sit inset from the raised wall lips.
+  /// Doubles as the wall-corner hook radius, so a larger value = rounder hooks.
+  var topRaise: CGFloat = 30
 
   func path(in rect: CGRect) -> Path {
     let w = rect.width
@@ -100,7 +101,7 @@ struct IslandView: View {
       }
     }
     // Extra top/bottom inset keeps content clear of the raised wall-side lips.
-    .padding(EdgeInsets(top: 28, leading: 14, bottom: 28, trailing: 14))
+    .padding(EdgeInsets(top: 44, leading: 14, bottom: 44, trailing: 14))
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .glassEffect(.regular, in: EdgeBlobShape())
     .background(HoverTracking(onChange: onHoverChange))
