@@ -12,7 +12,7 @@
     <key>LSMinimumSystemVersion</key><string>26.0</string>
     <key>LSUIElement</key><true/>
     <key>CFBundleIconFile</key><string>Icon</string>
-    <key>BuildTimestamp</key><string>2026-07-17T05:52:05Z</string>
-    <key>GitCommit</key><string>a0a0ac8</string>
+    <key>BuildTimestamp</key><string>2026-07-17T06:08:48Z</string>
+    <key>GitCommit</key><string>0362f7c</string>
 </dict>
 </plist>
