@@ -34,14 +34,27 @@ final class Note {
     }
 }
 
+/// A named tint color a note can use.
+struct NoteColor: Hashable {
+    let name: String
+    let hex: String
+}
+
 /// The palette of tint colors a note can use.
 enum NotePalette {
-    static let `default`: [String] = [
-        "#FFD60A", // yellow
-        "#FF9F0A", // orange
-        "#FF6482", // pink
-        "#BF5AF2", // purple
-        "#5AC8FA", // blue
-        "#30D158", // green
+    static let colors: [NoteColor] = [
+        NoteColor(name: "Yellow", hex: "#FFD60A"),
+        NoteColor(name: "Orange", hex: "#FF9F0A"),
+        NoteColor(name: "Pink",   hex: "#FF6482"),
+        NoteColor(name: "Purple", hex: "#BF5AF2"),
+        NoteColor(name: "Blue",   hex: "#5AC8FA"),
+        NoteColor(name: "Green",  hex: "#30D158"),
     ]
+
+    static let `default`: [String] = colors.map(\.hex)
+
+    /// Human-readable name for a hex value, falling back to "Custom".
+    static func name(for hex: String) -> String {
+        colors.first { $0.hex.caseInsensitiveCompare(hex) == .orderedSame }?.name ?? "Custom"
+    }
 }

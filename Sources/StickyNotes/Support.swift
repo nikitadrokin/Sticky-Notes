@@ -13,6 +13,15 @@ extension Color {
         let b = Double(value & 0x0000FF) / 255.0
         self = Color(.sRGB, red: r, green: g, blue: b, opacity: 1.0)
     }
+
+    /// Convert to a "#RRGGBB" hex string (sRGB), or nil if it can't be resolved.
+    func toHex() -> String? {
+        guard let rgb = NSColor(self).usingColorSpace(.sRGB) else { return nil }
+        let r = Int((rgb.redComponent * 255).rounded())
+        let g = Int((rgb.greenComponent * 255).rounded())
+        let b = Int((rgb.blueComponent * 255).rounded())
+        return String(format: "#%02X%02X%02X", r, g, b)
+    }
 }
 
 extension Note {

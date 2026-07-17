@@ -10,6 +10,22 @@ struct NoteView: View {
 
     @State private var showControls = false
 
+    /// Bound selection for the palette picker.
+    private var colorSelection: Binding<String> {
+        Binding(
+            get: { note.colorHex },
+            set: { note.colorHex = $0; appState.save() }
+        )
+    }
+
+    /// Bound Color for the native color wheel.
+    private var customColor: Binding<Color> {
+        Binding(
+            get: { Color(hex: note.colorHex) },
+            set: { note.colorHex = $0.toHex() ?? note.colorHex; appState.save() }
+        )
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             header
@@ -39,23 +55,27 @@ struct NoteView: View {
 
                 // Color picker.
                 Menu {
-                    ForEach(NotePalette.default, id: \.self) { hex in
-                        Button {
-                            note.colorHex = hex
-                            appState.save()
-                        } label: {
+                    Picker("Color", selection: colorSelection) {
+                        ForEach(NotePalette.colors, id: \.self) { color in
                             Label {
-                                Text(hex)
+                                Text(color.name)
                             } icon: {
-                                Circle().fill(Color(hex: hex))
+                                Image(systemName: "circle.fill")
+                                    .foregroundStyle(Color(hex: color.hex))
                             }
+                            .tag(color.hex)
                         }
                     }
+                    .pickerStyle(.inline)
+                    .labelsHidden()
+
+                    Divider()
+
+                    ColorPicker("Custom color…", selection: customColor, supportsOpacity: false)
                 } label: {
-                    Circle()
-                        .fill(Color(hex: note.colorHex))
-                        .frame(width: 14, height: 14)
-                        .overlay(Circle().strokeBorder(.white.opacity(0.6), lineWidth: 1))
+                    Image(systemName: "paintpalette.fill")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Color(hex: note.colorHex))
                         .frame(width: 28, height: 28)
                         .contentShape(Circle())
                 }
@@ -64,7 +84,7 @@ struct NoteView: View {
                 .buttonStyle(.glass)
                 .buttonBorderShape(.circle)
                 .fixedSize()
-                .help("Change color")
+                .help("Change color — \(NotePalette.name(for: note.colorHex))")
 
                 Spacer(minLength: 0)
 
