@@ -32,36 +32,44 @@ struct NoteView: View {
     }
 
     private var header: some View {
-        HStack(spacing: 8) {
-            // Dock back to the edge.
-            controlButton(system: "chevron.left", help: "Dock to edge", action: onDock)
+        GlassEffectContainer(spacing: 8) {
+            HStack(spacing: 8) {
+                // Dock back to the edge.
+                controlButton(system: "chevron.left", help: "Dock to edge", action: onDock)
 
-            // Color picker.
-            Menu {
-                ForEach(NotePalette.default, id: \.self) { hex in
-                    Button {
-                        note.colorHex = hex
-                        appState.save()
-                    } label: {
-                        Label {
-                            Text(hex)
-                        } icon: {
-                            Circle().fill(Color(hex: hex))
+                // Color picker.
+                Menu {
+                    ForEach(NotePalette.default, id: \.self) { hex in
+                        Button {
+                            note.colorHex = hex
+                            appState.save()
+                        } label: {
+                            Label {
+                                Text(hex)
+                            } icon: {
+                                Circle().fill(Color(hex: hex))
+                            }
                         }
                     }
+                } label: {
+                    Circle()
+                        .fill(Color(hex: note.colorHex))
+                        .frame(width: 14, height: 14)
+                        .overlay(Circle().strokeBorder(.white.opacity(0.6), lineWidth: 1))
+                        .frame(width: 28, height: 28)
+                        .contentShape(Circle())
                 }
-            } label: {
-                Circle()
-                    .fill(Color(hex: note.colorHex))
-                    .frame(width: 14, height: 14)
-                    .overlay(Circle().strokeBorder(.white.opacity(0.4), lineWidth: 1))
+                .menuStyle(.button)
+                .menuIndicator(.hidden)
+                .buttonStyle(.glass)
+                .buttonBorderShape(.circle)
+                .fixedSize()
+                .help("Change color")
+
+                Spacer(minLength: 0)
+
+                controlButton(system: "trash", help: "Delete note", action: onDelete)
             }
-            .menuStyle(.borderlessButton)
-            .fixedSize()
-
-            Spacer(minLength: 0)
-
-            controlButton(system: "trash", help: "Delete note", action: onDelete)
         }
         .padding(.horizontal, 12)
         .padding(.top, 10)
@@ -75,10 +83,12 @@ struct NoteView: View {
     private func controlButton(system: String, help: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: system)
-                .font(.system(size: 11, weight: .semibold))
-                .frame(width: 20, height: 20)
+                .font(.system(size: 13, weight: .semibold))
+                .frame(width: 28, height: 28)
+                .contentShape(Circle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.glass)
+        .buttonBorderShape(.circle)
         .help(help)
     }
 }
