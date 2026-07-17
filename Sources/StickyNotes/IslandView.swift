@@ -95,10 +95,9 @@ struct IslandView: View {
                 .keyboardShortcut("q", modifiers: .command)
             }
         }
-        // Extra leading inset keeps content clear of the wall-side coves.
-        .padding(EdgeInsets(top: 14, leading: 22, bottom: 14, trailing: 14))
+        .padding(EdgeInsets(top: 14, leading: 14, bottom: 14, trailing: 14))
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .glassEffect(.regular, in: EdgeBlobShape())
+        .glassEffect(.regular, in: .rect(cornerRadius: 26))
         .background(HoverTracking(onChange: onHoverChange))
     }
 
