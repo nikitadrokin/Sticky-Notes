@@ -40,8 +40,8 @@ struct NoteView: View {
         .scrollContentBackground(.hidden)
         .background(.clear)
         .padding(.horizontal, 12)
-        .padding(.top, showControls ? 0 : 12)
-        .padding(.bottom, 12)
+        .padding(.top, showControls ? 2 : 0)
+        .mask(scrollEdgeMask)
         .onChange(of: note.text) { _, _ in
           appState.touch(note)
         }
@@ -53,6 +53,21 @@ struct NoteView: View {
       in: .rect(cornerRadius: 22)
     )
     .background(HoverTracking { showControls = $0 })
+  }
+
+  /// Fades text softly at the top and bottom of the scroll area so lines
+  /// dissolve into the glass instead of being hard-clipped at the bounds.
+  private var scrollEdgeMask: some View {
+    LinearGradient(
+      stops: [
+        .init(color: .clear, location: 0.0),
+        .init(color: .black, location: 0.06),
+        .init(color: .black, location: 0.90),
+        .init(color: .clear, location: 1.0),
+      ],
+      startPoint: .top,
+      endPoint: .bottom
+    )
   }
 
   private var header: some View {
