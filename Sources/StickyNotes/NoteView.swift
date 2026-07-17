@@ -40,12 +40,14 @@ struct NoteView: View {
         .scrollContentBackground(.hidden)
         .background(.clear)
         .padding(.horizontal, 12)
+        .padding(.top, showControls ? 0 : 12)
         .padding(.bottom, 12)
         .onChange(of: note.text) { _, _ in
           appState.touch(note)
         }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .animation(.easeInOut(duration: 0.2), value: showControls)
     .glassEffect(
       .regular.tint(Color(hex: note.colorHex).opacity(0.55)).interactive(),
       in: .rect(cornerRadius: 22)
@@ -101,7 +103,8 @@ struct NoteView: View {
     .padding(.top, 10)
     .padding(.bottom, 4)
     .opacity(showControls ? 1 : 0.0)
-    .animation(.easeInOut(duration: 0.15), value: showControls)
+    .frame(height: showControls ? nil : 0, alignment: .top)
+    .clipped()
     // The header doubles as the drag handle (panel is movable by background).
     .contentShape(Rectangle())
   }
