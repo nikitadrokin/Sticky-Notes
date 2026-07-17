@@ -61,15 +61,17 @@ struct IslandView: View {
             .buttonStyle(.glassProminent)
 
             ScrollView(.vertical, showsIndicators: false) {
-                VStack(spacing: 8) {
-                    if appState.notes.isEmpty {
-                        Text("No notes yet")
-                            .font(.system(size: 12))
-                            .foregroundStyle(.secondary)
-                            .padding(.top, 8)
-                    }
-                    ForEach(appState.notes) { note in
-                        tab(for: note)
+                GlassEffectContainer(spacing: 8) {
+                    VStack(spacing: 8) {
+                        if appState.notes.isEmpty {
+                            Text("No notes yet")
+                                .font(.system(size: 12))
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 8)
+                        }
+                        ForEach(appState.notes) { note in
+                            tab(for: note)
+                        }
                     }
                 }
             }
@@ -82,11 +84,12 @@ struct IslandView: View {
                     NSApp.terminate(nil)
                 } label: {
                     Image(systemName: "power")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.secondary)
-                        .padding(6)
+                        .font(.system(size: 12, weight: .semibold))
+                        .frame(width: 28, height: 28)
+                        .contentShape(Circle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.glass)
+                .buttonBorderShape(.circle)
                 .help("Quit Sticky Notes (⌘Q)")
                 // Command-Q quits while the tray is open.
                 .keyboardShortcut("q", modifiers: .command)
@@ -120,7 +123,7 @@ struct IslandView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.white.opacity(0.08), in: .rect(cornerRadius: 12))
+            .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 12))
         }
         .buttonStyle(.plain)
         .contextMenu {
