@@ -1,6 +1,48 @@
 import SwiftUI
 import AppKit
 
+/// A rounded rectangle that fuses to the left screen edge: the trailing corners
+/// are convex (normal rounding), while the two corners touching the wall use an
+/// *inverted* (concave) fillet. The flat top and bottom edges overhang the
+/// narrower neck at the wall, so the island reads as if it "blobbed" out of the
+/// side of the screen rather than floating beside it.
+struct EdgeBlobShape: Shape {
+    /// Convex rounding on the trailing (right) corners.
+    var trailingRadius: CGFloat = 26
+    /// Concave rounding where the top/bottom edges meet the left wall.
+    var filletRadius: CGFloat = 22
+
+    func path(in rect: CGRect) -> Path {
+        let w = rect.width
+        let h = rect.height
+        // Clamp so the two radii never overlap on short/narrow islands.
+        let cr = min(trailingRadius, w / 2, h / 2)
+        let fr = min(filletRadius, w - cr, h / 2 - 1)
+
+        var p = Path()
+        // Start at the flat top, just past the leading fillet.
+        p.move(to: CGPoint(x: fr, y: 0))
+        // Flat top edge → trailing top corner (convex).
+        p.addLine(to: CGPoint(x: w - cr, y: 0))
+        p.addArc(center: CGPoint(x: w - cr, y: cr), radius: cr,
+                 startAngle: .degrees(-90), endAngle: .degrees(0), clockwise: false)
+        // Trailing edge → trailing bottom corner (convex).
+        p.addLine(to: CGPoint(x: w, y: h - cr))
+        p.addArc(center: CGPoint(x: w - cr, y: h - cr), radius: cr,
+                 startAngle: .degrees(0), endAngle: .degrees(90), clockwise: false)
+        // Flat bottom edge → bottom-left inverted fillet (concave).
+        p.addLine(to: CGPoint(x: fr, y: h))
+        p.addArc(center: CGPoint(x: fr, y: h - fr), radius: fr,
+                 startAngle: .degrees(90), endAngle: .degrees(180), clockwise: true)
+        // Wall contact (narrow neck) → top-left inverted fillet (concave).
+        p.addLine(to: CGPoint(x: 0, y: fr))
+        p.addArc(center: CGPoint(x: fr, y: fr), radius: fr,
+                 startAngle: .degrees(180), endAngle: .degrees(270), clockwise: true)
+        p.closeSubpath()
+        return p
+    }
+}
+
 /// The tray of notes shown inside the glass island.
 struct IslandView: View {
     let appState: AppState
@@ -50,9 +92,10 @@ struct IslandView: View {
                 .keyboardShortcut("q", modifiers: .command)
             }
         }
-        .padding(14)
+        // Extra leading inset keeps content clear of the narrow neck at the wall.
+        .padding(EdgeInsets(top: 14, leading: 22, bottom: 14, trailing: 14))
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .glassEffect(.regular, in: .rect(cornerRadius: 28))
+        .glassEffect(.regular, in: EdgeBlobShape())
         .background(HoverTracking(onChange: onHoverChange))
     }
 

@@ -26,8 +26,10 @@ final class IslandController {
 
         let visible = screen.visibleFrame
         let height = visible.height * heightFraction
+        // Flush to the very edge (nudged 1pt off-screen) so the inverted
+        // corners fuse into the wall instead of floating beside it.
         let shownFrame = NSRect(
-            x: visible.minX + 8,
+            x: visible.minX - 1,
             y: visible.midY - height / 2,
             width: islandWidth,
             height: height
