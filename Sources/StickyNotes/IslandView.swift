@@ -1,43 +1,43 @@
 import SwiftUI
 import AppKit
 
-/// A rounded rectangle that fuses to the left screen edge: the trailing corners
-/// are convex (normal rounding), while the two corners touching the wall use an
-/// *inverted* (concave) fillet. The flat top and bottom edges overhang the
-/// narrower neck at the wall, so the island reads as if it "blobbed" out of the
-/// side of the screen rather than floating beside it.
+/// A rounded rectangle that fuses to the left screen edge. The trailing (right)
+/// corners are convex (normal rounding). The wall side spans the *full* height and
+/// is the tallest part of the shape: the top and bottom edges are inset and sweep
+/// back out to the wall through a concave cove, so the island reads as if it
+/// bulged *out* of the side of the screen rather than pinching in at a neck.
 struct EdgeBlobShape: Shape {
     /// Convex rounding on the trailing (right) corners.
     var trailingRadius: CGFloat = 26
-    /// Concave rounding where the top/bottom edges meet the left wall.
+    /// Concave cove where the top/bottom edges flare out to meet the left wall.
     var filletRadius: CGFloat = 22
 
     func path(in rect: CGRect) -> Path {
         let w = rect.width
         let h = rect.height
-        // Clamp so the two radii never overlap on short/narrow islands.
-        let cr = min(trailingRadius, w / 2, h / 2)
+        // Clamp so the radii never overlap on short/narrow islands.
+        let cr = min(trailingRadius, w / 2, h / 2 - 1)
         let fr = min(filletRadius, w - cr, h / 2 - 1)
 
         var p = Path()
-        // Start at the flat top, just past the leading fillet.
-        p.move(to: CGPoint(x: fr, y: 0))
+        // Start at the top of the wall (tallest point).
+        p.move(to: CGPoint(x: 0, y: 0))
+        // Top cove: flare from the wall out to the inset top edge (concave).
+        p.addArc(center: CGPoint(x: fr, y: 0), radius: fr,
+                 startAngle: .degrees(180), endAngle: .degrees(90), clockwise: false)
         // Flat top edge → trailing top corner (convex).
-        p.addLine(to: CGPoint(x: w - cr, y: 0))
-        p.addArc(center: CGPoint(x: w - cr, y: cr), radius: cr,
-                 startAngle: .degrees(-90), endAngle: .degrees(0), clockwise: false)
+        p.addLine(to: CGPoint(x: w - cr, y: fr))
+        p.addArc(center: CGPoint(x: w - cr, y: fr + cr), radius: cr,
+                 startAngle: .degrees(270), endAngle: .degrees(360), clockwise: true)
         // Trailing edge → trailing bottom corner (convex).
-        p.addLine(to: CGPoint(x: w, y: h - cr))
-        p.addArc(center: CGPoint(x: w - cr, y: h - cr), radius: cr,
-                 startAngle: .degrees(0), endAngle: .degrees(90), clockwise: false)
-        // Flat bottom edge → bottom-left inverted fillet (concave).
-        p.addLine(to: CGPoint(x: fr, y: h))
-        p.addArc(center: CGPoint(x: fr, y: h - fr), radius: fr,
-                 startAngle: .degrees(90), endAngle: .degrees(180), clockwise: true)
-        // Wall contact (narrow neck) → top-left inverted fillet (concave).
-        p.addLine(to: CGPoint(x: 0, y: fr))
-        p.addArc(center: CGPoint(x: fr, y: fr), radius: fr,
-                 startAngle: .degrees(180), endAngle: .degrees(270), clockwise: true)
+        p.addLine(to: CGPoint(x: w, y: h - fr - cr))
+        p.addArc(center: CGPoint(x: w - cr, y: h - fr - cr), radius: cr,
+                 startAngle: .degrees(0), endAngle: .degrees(90), clockwise: true)
+        // Flat bottom edge → bottom cove flaring back to the wall (concave).
+        p.addLine(to: CGPoint(x: fr, y: h - fr))
+        p.addArc(center: CGPoint(x: fr, y: h), radius: fr,
+                 startAngle: .degrees(270), endAngle: .degrees(180), clockwise: false)
+        // Down the full-height wall back to the start.
         p.closeSubpath()
         return p
     }
@@ -95,7 +95,7 @@ struct IslandView: View {
                 .keyboardShortcut("q", modifiers: .command)
             }
         }
-        // Extra leading inset keeps content clear of the narrow neck at the wall.
+        // Extra leading inset keeps content clear of the wall-side coves.
         .padding(EdgeInsets(top: 14, leading: 22, bottom: 14, trailing: 14))
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .glassEffect(.regular, in: EdgeBlobShape())
