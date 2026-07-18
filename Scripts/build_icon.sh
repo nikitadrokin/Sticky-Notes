@@ -4,7 +4,15 @@ set -euo pipefail
 ICON_FILE=${1:-Icon.icon}
 BASENAME=${2:-Icon}
 OUT_ROOT=${3:-build/icon}
-XCODE_APP=${XCODE_APP:-/Applications/Xcode.app}
+# Resolve Xcode: honor XCODE_APP, else derive from xcode-select, else default.
+if [[ -z "${XCODE_APP:-}" ]]; then
+  DEV_DIR=$(xcode-select -p 2>/dev/null || true)
+  if [[ "$DEV_DIR" == *"/Contents/Developer" ]]; then
+    XCODE_APP="${DEV_DIR%/Contents/Developer}"
+  else
+    XCODE_APP="/Applications/Xcode.app"
+  fi
+fi
 
 ICTOOL="$XCODE_APP/Contents/Applications/Icon Composer.app/Contents/Executables/ictool"
 if [[ ! -x "$ICTOOL" ]]; then
