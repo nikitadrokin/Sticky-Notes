@@ -25,38 +25,49 @@ struct EdgeBlobShape: Shape {
 
   func path(in rect: CGRect) -> Path {
     let r = max(0, min(1, reveal))
-    // The trailing edge sweeps out from the wall as we emerge; height stays full
-    // so it reads as a sliver peeling off the edge.
-    let w = max(1, rect.width * r)
     let h = rect.height
-    // Clamp so the radii never overlap on short/narrow islands, then scale them
-    // down with `r` so the corners start nearly square and round out as we grow.
-    let cr = max(0, min(trailingRadius, w / 2, h / 2 - 1) * r)
-    let raise = max(0, min(topRaise, w - cr, h / 2 - 1) * r)
+    // `inset` is the CONSTANT vertical padding — the gap between the frame edge
+    // and the flat top/bottom edges of the body. It never animates, so the shape
+    // always keeps its hardcoded padding and never stretches to the true y=0 / y=h
+    // of the panel frame. Only the *lip* (how far the wall-side corners bulge past
+    // the flat edge, out toward y=0 / y=h) grows with `reveal`.
+    let inset = max(0, min(topRaise, h / 2 - 1))
+    let lip = inset * r
+    // The trailing edge sweeps out from the wall as we emerge.
+    let w = max(1, rect.width * r)
+    // Trailing corner radius blooms with reveal, clamped so it never overlaps.
+    let cr = max(0, min(trailingRadius, w / 2, h / 2 - inset - 1) * r)
+
+    // Vertical extents: the flat body edges are fixed at `inset` / `h - inset`;
+    // the wall-side lips protrude to `inset - lip` / `h - inset + lip`.
+    let topFlat = inset
+    let botFlat = h - inset
+    let topWall = inset - lip
+    let botWall = h - inset + lip
 
     var p = Path()
-    // Wall top — the highest point, flush to the left edge.
-    p.move(to: CGPoint(x: 0, y: 0))
-    // Convex hook: rise from the inset flat top edge up to the wall top.
+    // Wall top — the highest point of the (animating) lip, flush to the left edge.
+    p.move(to: CGPoint(x: 0, y: topWall))
+    // Convex hook: rise from the flat top edge up to the wall lip.
     p.addArc(
-      center: CGPoint(x: raise, y: 0), radius: raise,
+      center: CGPoint(x: lip, y: topWall), radius: lip,
       startAngle: .degrees(180), endAngle: .degrees(90), clockwise: true)
     // Flat top edge → trailing top corner (convex).
-    p.addLine(to: CGPoint(x: w - cr, y: raise))
+    p.addLine(to: CGPoint(x: w - cr, y: topFlat))
     p.addArc(
-      center: CGPoint(x: w - cr, y: raise + cr), radius: cr,
+      center: CGPoint(x: w - cr, y: topFlat + cr), radius: cr,
       startAngle: .degrees(270), endAngle: .degrees(360), clockwise: false)
     // Trailing edge → trailing bottom corner (convex).
-    p.addLine(to: CGPoint(x: w, y: h - raise - cr))
+    p.addLine(to: CGPoint(x: w, y: botFlat - cr))
     p.addArc(
-      center: CGPoint(x: w - cr, y: h - raise - cr), radius: cr,
+      center: CGPoint(x: w - cr, y: botFlat - cr), radius: cr,
       startAngle: .degrees(0), endAngle: .degrees(90), clockwise: false)
-    // Flat bottom edge → convex hook dropping back down to the wall bottom.
-    p.addLine(to: CGPoint(x: raise, y: h - raise))
+    // Flat bottom edge → convex hook dropping back down to the wall lip.
+    p.addLine(to: CGPoint(x: lip, y: botFlat))
     p.addArc(
-      center: CGPoint(x: raise, y: h), radius: raise,
+      center: CGPoint(x: lip, y: botWall), radius: lip,
       startAngle: .degrees(270), endAngle: .degrees(180), clockwise: true)
-    // Up the full-height wall back to the start.
+    // Up the wall (inset..inset, plus lips) back to the start.
     p.closeSubpath()
     return p
   }
