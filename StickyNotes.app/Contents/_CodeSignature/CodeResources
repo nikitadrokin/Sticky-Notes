@@ -8,9 +8,13 @@
 		<data>
 		2jmj7l5rSw0yVb/vlWAYkK/YBwk=
 		</data>
+		<key>Resources/Icon.icns</key>
+		<data>
+		KeDDObhyDmEhT5jXDKMadpJJsbI=
+		</data>
 		<key>Resources/StickyNotes_StickyNotes.bundle/Contents/Info.plist</key>
 		<data>
-		TZkdrUE9krrAh3dN0ve+yP87T6A=
+		9UTs8OWgS8bIwMjlrznJR+TQrnI=
 		</data>
 		<key>Resources/StickyNotes_StickyNotes.bundle/Contents/Resources/Resources/.keep</key>
 		<data>
@@ -26,11 +30,18 @@
 			47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=
 			</data>
 		</dict>
+		<key>Resources/Icon.icns</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			LmOEedL5vG+uLRnWzYM0Lo1zHZSTvs6VdkIWN3ew9/0=
+			</data>
+		</dict>
 		<key>Resources/StickyNotes_StickyNotes.bundle/Contents/Info.plist</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			KQEfJnkyGNHz4HO4LLA0pVpxzlG4bt0Fux4fhHBU3Ns=
+			nZzJd1eRp3/p7wQwvUvs30Y9tOYCxkz8yJ/AMWonkBs=
 			</data>
 		</dict>
 		<key>Resources/StickyNotes_StickyNotes.bundle/Contents/Resources/Resources/.keep</key>

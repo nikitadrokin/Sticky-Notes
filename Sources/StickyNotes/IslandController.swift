@@ -6,7 +6,6 @@ import SwiftUI
 final class IslandController {
   private let appState: AppState
   private var panel: NSPanel?
-  private var hideWorkItem: DispatchWorkItem?
   private let presenter = IslandPresenter()
 
   /// Matches the SwiftUI spring so we don't order the panel out mid-morph.
@@ -22,7 +21,6 @@ final class IslandController {
   // MARK: - Show / hide
 
   func show(besideStrip strip: NSRect, on screen: NSScreen) {
-    hideWorkItem?.cancel()
     appState.refresh()
 
     let panel = panel ?? makePanel()
@@ -45,13 +43,6 @@ final class IslandController {
     panel.orderFrontRegardless()
     // Kick the SwiftUI spring: shape sweeps out from the wall and radii bloom.
     presenter.isShown = true
-  }
-
-  private func scheduleHide() {
-    hideWorkItem?.cancel()
-    let work = DispatchWorkItem { [weak self] in self?.hide() }
-    hideWorkItem = work
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: work)
   }
 
   private func hide() {
@@ -89,7 +80,9 @@ final class IslandController {
       appState: appState,
       presenter: presenter,
       onHoverChange: { [weak self] inside in
-        if inside { self?.hideWorkItem?.cancel() } else { self?.scheduleHide() }
+        // Close the moment the cursor leaves — no timer, so a fresh hover can't
+        // be clobbered by a stale scheduled hide firing right after it reopens.
+        if !inside { self?.hide() }
       }
     )
     let hosting = NSHostingView(rootView: root)
