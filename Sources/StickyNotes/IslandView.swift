@@ -12,13 +12,27 @@ struct EdgeBlobShape: Shape {
   /// How far the flat top/bottom edges sit inset from the raised wall lips.
   /// Doubles as the wall-corner hook radius, so a larger value = rounder hooks.
   var topRaise: CGFloat = 30
+  /// Emergence progress. 0 = retracted into the wall (thin sliver, tight radii),
+  /// 1 = fully bulged out to its resting shape. Interpolating this makes the
+  /// island appear to morph out of the screen edge rather than slide in flat.
+  var reveal: CGFloat = 1
+
+  // Drive the whole morph off a single interpolated value.
+  var animatableData: CGFloat {
+    get { reveal }
+    set { reveal = newValue }
+  }
 
   func path(in rect: CGRect) -> Path {
-    let w = rect.width
+    let r = max(0, min(1, reveal))
+    // The trailing edge sweeps out from the wall as we emerge; height stays full
+    // so it reads as a sliver peeling off the edge.
+    let w = max(1, rect.width * r)
     let h = rect.height
-    // Clamp so the radii never overlap on short/narrow islands.
-    let cr = min(trailingRadius, w / 2, h / 2 - 1)
-    let raise = min(topRaise, w - cr, h / 2 - 1)
+    // Clamp so the radii never overlap on short/narrow islands, then scale them
+    // down with `r` so the corners start nearly square and round out as we grow.
+    let cr = max(0, min(trailingRadius, w / 2, h / 2 - 1) * r)
+    let raise = max(0, min(topRaise, w - cr, h / 2 - 1) * r)
 
     var p = Path()
     // Wall top — the highest point, flush to the left edge.
@@ -48,10 +62,24 @@ struct EdgeBlobShape: Shape {
   }
 }
 
+/// Drives the island's emerge/retract animation. The controller flips `isShown`;
+/// the SwiftUI view interpolates the shape's `reveal` in response.
+@MainActor
+@Observable
+final class IslandPresenter {
+  var isShown = false
+}
+
 /// The tray of notes shown inside the glass island.
 struct IslandView: View {
   let appState: AppState
+  let presenter: IslandPresenter
   var onHoverChange: (Bool) -> Void
+
+  /// The blob shape at the current emergence progress.
+  private var blob: EdgeBlobShape {
+    EdgeBlobShape(reveal: presenter.isShown ? 1 : 0)
+  }
 
   var body: some View {
     VStack(spacing: 12) {
@@ -103,7 +131,14 @@ struct IslandView: View {
     // Extra top/bottom inset keeps content clear of the raised wall-side lips.
     .padding(EdgeInsets(top: 44, leading: 14, bottom: 44, trailing: 14))
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .glassEffect(.regular, in: EdgeBlobShape())
+    .glassEffect(.regular, in: blob)
+    // Clip the tray to the growing blob so the content emerges *with* the glass
+    // instead of appearing at full width behind a small shape.
+    .mask(blob)
+    // Fade the contents in a touch behind the leading edge of the morph.
+    .opacity(presenter.isShown ? 1 : 0)
+    // A single spring drives both the width sweep and the blooming radii.
+    .animation(.spring(response: 0.42, dampingFraction: 0.82), value: presenter.isShown)
     .background(HoverTracking(onChange: onHoverChange))
   }
 
