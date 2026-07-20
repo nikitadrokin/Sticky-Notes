@@ -1,6 +1,23 @@
 import AppKit
 import SwiftUI
 
+extension NSScreen {
+  /// The display the app should live on: the built-in panel if present,
+  /// otherwise the primary (menu-bar) display. `NSScreen.main` follows keyboard
+  /// focus and can land us on an external monitor, which we don't want.
+  static var preferred: NSScreen? {
+    let builtin = screens.first { screen in
+      guard
+        let number = screen.deviceDescription[
+          NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID
+      else { return false }
+      return CGDisplayIsBuiltin(number) != 0
+    }
+    // `screens.first` is the primary display (origin at 0,0, owns the menu bar).
+    return builtin ?? screens.first ?? main
+  }
+}
+
 extension Color {
   /// Build a color from a "#RRGGBB" hex string.
   init(hex: String) {

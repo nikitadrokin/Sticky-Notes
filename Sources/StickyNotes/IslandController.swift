@@ -72,7 +72,8 @@ final class IslandController {
     panel.backgroundColor = .clear
     panel.isOpaque = false
     panel.hasShadow = false
-    panel.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
+    // Match the hot zone: desktop-space only, never over a full-screen app.
+    panel.collectionBehavior = [.stationary, .ignoresCycle]
     panel.hidesOnDeactivate = false
     panel.alphaValue = 0
 

@@ -20,7 +20,7 @@ final class EdgeHotzoneController {
   }
 
   func install() {
-    guard let screen = NSScreen.main else { return }
+    guard let screen = NSScreen.preferred else { return }
     let visible = screen.visibleFrame
 
     let height = visible.height * stripHeightFraction
@@ -43,7 +43,9 @@ final class EdgeHotzoneController {
     panel.isOpaque = false
     panel.hasShadow = false
     panel.ignoresMouseEvents = false
-    panel.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
+    // Deliberately NOT `.canJoinAllSpaces`: the strip lives only on the desktop
+    // space, so it stays hidden whenever an app is full-screened (its own space).
+    panel.collectionBehavior = [.stationary, .ignoresCycle]
     panel.hidesOnDeactivate = false
 
     let tracker = TrackingView(frame: NSRect(origin: .zero, size: frame.size))
