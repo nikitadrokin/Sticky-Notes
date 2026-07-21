@@ -45,6 +45,25 @@ final class IslandController {
     presenter.isShown = true
   }
 
+  /// The hover tracking view reports an exit whenever the cursor leaves its
+  /// bounds — including when it moves onto a right-click context menu, which
+  /// floats in its own window above the island. Retracting then would yank the
+  /// tray out from under the menu. The menu overlaps the island frame, so we
+  /// only actually hide once the cursor is genuinely outside the panel.
+  private func hideIfCursorAway() {
+    guard let panel else { return }
+    if panel.frame.contains(NSEvent.mouseLocation) {
+      // Cursor is still over the panel (typically because a context menu is
+      // open on top of it). The tracking view won't fire another exit, so poll
+      // until the cursor genuinely leaves, then retract.
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
+        self?.hideIfCursorAway()
+      }
+      return
+    }
+    hide()
+  }
+
   private func hide() {
     guard let panel else { return }
     // Retract by reversing the SwiftUI morph, then order the panel out once the
@@ -83,7 +102,7 @@ final class IslandController {
       onHoverChange: { [weak self] inside in
         // Close the moment the cursor leaves — no timer, so a fresh hover can't
         // be clobbered by a stale scheduled hide firing right after it reopens.
-        if !inside { self?.hide() }
+        if !inside { self?.hideIfCursorAway() }
       }
     )
     let hosting = NSHostingView(rootView: root)
